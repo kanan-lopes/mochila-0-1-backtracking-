@@ -2,10 +2,11 @@
 
 #include <stdlib.h>
 
-static int aleatorio_int(int min, int max) {
+int aleatorio_int(int min, int max) {
     if (max < min) {
         return min;
     }
+    // Gera um numero aleatorio 
     return min + (rand() % (max - min + 1));
 }
 

@@ -26,7 +26,34 @@ double tempo_agora(void) {
 #endif
 }
 
-Instancia *instancia_criar(int n, int W, int V) {
+void imprimir_resultado(const Instancia *inst, const Resultado *res) {
+  int peso_total = 0;
+  int volume_total = 0;
+
+  printf("Lucro maximo: %d\n", res->valor_maximo);
+  printf("Itens na mochila (indice comeca em 1):\n");
+
+  int algum = 0;
+  for (unsigned int i = 0; i < inst->n; i++) {
+    if (res->selecionados[i]) {
+      printf("  Item %d: peso=%d, volume=%d, valor=%d\n", i + 1,
+             inst->itens[i].peso, inst->itens[i].volume, inst->itens[i].valor);
+      peso_total += inst->itens[i].peso;
+      volume_total += inst->itens[i].volume;
+      algum = 1;
+    }
+  }
+
+  if (!algum) {
+    printf("  (nenhum item selecionado)\n");
+  }
+
+  printf("Peso total: %d / %d\n", peso_total, inst->W);
+  printf("Volume total: %d / %d\n", volume_total, inst->V);
+  printf("Tempo de execucao: %.6f s\n", res->tempo_segundos);
+}
+
+Instancia *instancia_criar(unsigned int n, unsigned int W, unsigned int V) {
   Instancia *inst = malloc(sizeof(Instancia));
   if (!inst) {
     return NULL;
@@ -117,14 +144,14 @@ void instancia_salvar_arquivo(const Instancia *inst, const char *caminho) {
     return;
   }
   fprintf(f, "%d %d\n", inst->W, inst->V);
-  for (int i = 0; i < inst->n; i++) {
+  for (unsigned int i = 0; i < inst->n; i++) {
     fprintf(f, "%d\t%d\t%d\n", inst->itens[i].peso, inst->itens[i].volume,
             inst->itens[i].valor);
   }
   fclose(f);
 }
 
-static int aleatorio_int(int min, int max) {
+unsigned int aleatorio_int(unsigned int min, unsigned int max) {
   if (max < min) {
     return min;
   }
@@ -135,7 +162,7 @@ static int aleatorio_int(int min, int max) {
  * Gera instância aleatória: pesos e volumes entre 1 e max(capacidade/2, 1),
  * valores entre 1 e 100.
  */
-Instancia *instancia_gerar_aleatoria(int n, int W, int V,
+Instancia *instancia_gerar_aleatoria(unsigned int n, unsigned int W, unsigned int V,
                                      unsigned int semente) {
   srand(semente);
 
@@ -144,16 +171,16 @@ Instancia *instancia_gerar_aleatoria(int n, int W, int V,
     return NULL;
   }
 
-  int max_peso = W / 2;
+  unsigned int max_peso = W / 2;
   if (max_peso < 1) {
     max_peso = 1;
   }
-  int max_vol = V / 2;
+  unsigned int max_vol = V / 2;
   if (max_vol < 1) {
     max_vol = 1;
   }
 
-  for (int i = 0; i < n; i++) {
+  for (unsigned int i = 0; i < n; i++) {
     inst->itens[i].peso = aleatorio_int(1, max_peso);
     inst->itens[i].volume = aleatorio_int(1, max_vol);
     inst->itens[i].valor = aleatorio_int(1, 100);
@@ -162,7 +189,7 @@ Instancia *instancia_gerar_aleatoria(int n, int W, int V,
   return inst;
 }
 
-static int **alocar_matriz_int(int linhas, int cols) {
+int **alocar_matriz_int(int linhas, int cols) {
   int **m = malloc((size_t)linhas * sizeof(int *));
   if (!m) {
     return NULL;
@@ -180,7 +207,7 @@ static int **alocar_matriz_int(int linhas, int cols) {
   return m;
 }
 
-static void liberar_matriz_int(int **m, int linhas) {
+void liberar_matriz_int(int **m, int linhas) {
   if (!m) {
     return;
   }
@@ -190,7 +217,7 @@ static void liberar_matriz_int(int **m, int linhas) {
   free(m);
 }
 
-static char **alocar_matriz_char(int linhas, int cols) {
+char **alocar_matriz_char(int linhas, int cols) {
   char **m = malloc((size_t)linhas * sizeof(char *));
   if (!m) {
     return NULL;
@@ -208,7 +235,7 @@ static char **alocar_matriz_char(int linhas, int cols) {
   return m;
 }
 
-static void liberar_matriz_char(char **m, int linhas) {
+void liberar_matriz_char(char **m, int linhas) {
   if (!m) {
     return;
   }
@@ -225,3 +252,55 @@ void resultado_liberar(Resultado *res) {
   free(res->selecionados);
   free(res);
 }
+
+unsigned int ***alocar_matriz3d_uint(int d1, int d2, int d3) {
+  unsigned int ***m = malloc((size_t)d1 * sizeof(unsigned int **));
+  if (!m) {
+    return NULL;
+  }
+  for (int i = 0; i < d1; i++) {
+    m[i] = malloc((size_t)d2 * sizeof(unsigned int *));
+    if (!m[i]) {
+      for (int k = 0; k < i; k++) {
+        for (int j = 0; j < d2; j++) {
+          free(m[k][j]);
+        }
+        free(m[k]);
+      }
+      free(m);
+      return NULL;
+    }
+    for (int j = 0; j < d2; j++) {
+      m[i][j] = calloc((size_t)d3, sizeof(unsigned int));
+      if (!m[i][j]) {
+        for (int k = 0; k < j; k++) {
+          free(m[i][k]);
+        }
+        free(m[i]);
+        for (int k = 0; k < i; k++) {
+          for (int l = 0; l < d2; l++) {
+            free(m[k][l]);
+          }
+          free(m[k]);
+        }
+        free(m);
+        return NULL;
+      }
+    }
+  }
+  return m;
+}
+
+void liberar_matriz3d_uint(unsigned int ***m, int d1, int d2) {
+  if (!m) {
+    return;
+  }
+  for (int i = 0; i < d1; i++) {
+    for (int j = 0; j < d2; j++) {
+      free(m[i][j]);
+    }
+    free(m[i]);
+  }
+  free(m);
+}
+

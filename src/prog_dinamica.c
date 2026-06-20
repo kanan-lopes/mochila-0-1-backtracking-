@@ -1,12 +1,20 @@
 #include "mochila.h"
 
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
 /*
  * Programação dinâmica 3D: dp[i][w][v] = lucro máximo usando itens 0..i-1
  * com capacidade de peso w e volume v.
  * Complexidade: O(n * W * V) tempo e espaço.
  */
 Resultado *prog_dinamica_resolver(const Instancia *inst) {
+  double inicio = tempo_agora();
+
+  printf("Resolvendo instancia com n=%d, W=%d, V=%d usando programacao dinamica...\n",
+         inst->n, inst->W, inst->V);
+
   Resultado *res = calloc(1, sizeof(Resultado));
   if (!res) {
     return NULL;
@@ -16,7 +24,9 @@ Resultado *prog_dinamica_resolver(const Instancia *inst) {
   int W = inst->W;
   int V = inst->V;
 
-  res->selecionados = calloc((size_t)n, sizeof(int));
+  // Aloca o vetor de itens selecionados (0 ou 1 para cada item)
+  // e inicializa com 0 (nenhum item selecionado)
+  res->selecionados = calloc((size_t)n, sizeof(unsigned int));
   if (!res->selecionados) {
     free(res);
     return NULL;
@@ -28,76 +38,59 @@ Resultado *prog_dinamica_resolver(const Instancia *inst) {
     return res;
   }
 
-  int linhas = W + 1;
-  int cols = V + 1;
+  // Aloca a matriz 3D para programação dinâmica
+  // Sendo as dimensões: (n+1) x (W+1) x (V+1)
+  unsigned int ***tabela_dp = alocar_matriz3d_uint(n + 1, W + 1, V + 1);
 
-  int **dp = alocar_matriz_int(linhas, cols);
-  char **escolha = alocar_matriz_char(n, linhas * cols);
-  if (!dp || !escolha) {
-    liberar_matriz_int(dp, linhas);
-    liberar_matriz_char(escolha, n);
-    free(res->selecionados);
-    free(res);
-    return NULL;
-  }
-
-  double inicio = tempo_agora();
-
-  int **dp_ant = alocar_matriz_int(linhas, cols);
-  if (!dp_ant) {
-    liberar_matriz_int(dp, linhas);
-    liberar_matriz_char(escolha, n);
-    free(res->selecionados);
-    free(res);
-    return NULL;
-  }
-
-  for (int i = 0; i < n; i++) {
-    int pi = inst->itens[i].peso;
-    int vi = inst->itens[i].volume;
-    int val = inst->itens[i].valor;
-
-    for (int w = 0; w <= W; w++) {
-      memcpy(dp_ant[w], dp[w], (size_t)cols * sizeof(int));
-    }
-
+  // Inicializa a tabela com zeros
+  for (int i = 0; i <= n; i++) {
     for (int w = 0; w <= W; w++) {
       for (int v = 0; v <= V; v++) {
-        int melhor = dp_ant[w][v];
-        char tomou = 0;
-
-        if (w >= pi && v >= vi) {
-          int candidato = dp_ant[w - pi][v - vi] + val;
-          if (candidato > melhor) {
-            melhor = candidato;
-            tomou = 1;
-          }
-        }
-
-        dp[w][v] = melhor;
-        escolha[i][w * cols + v] = tomou;
+        tabela_dp[i][w][v] = 0;
       }
     }
   }
 
-  liberar_matriz_int(dp_ant, linhas);
+  // Preenche a tabela de programação dinâmica
+  for (int i = 1; i <=n; i++) {
+    // Ajustando os indices para acessar o item correto
+    int peso = inst->itens[i - 1].peso;
+    int volume = inst->itens[i - 1].volume;
+    int valor = inst->itens[i - 1].valor;
 
-  res->tempo_segundos = tempo_agora() - inicio;
-  res->valor_maximo = dp[W][V];
-
-  int w = W;
-  int v = V;
-  for (int i = n - 1; i >= 0; i--) {
-    int idx = w * cols + v;
-    if (escolha[i][idx]) {
-      res->selecionados[i] = 1;
-      w -= inst->itens[i].peso;
-      v -= inst->itens[i].volume;
+    // Itera sobre todas as capacidades de peso e volume
+    for (int w = 0; w <= W; w++) {
+      for (int v = 0; v <= V; v++) {
+        // Verifica se o item atual pode ser incluido na mochila
+        if (peso <= w && volume <= v) {
+          // Escolhe o maximo entre incluir ou nao incluir o item
+          unsigned int incluir = valor + tabela_dp[i - 1][w - peso][v - volume];
+          unsigned int nao_incluir = tabela_dp[i - 1][w][v];
+          tabela_dp[i][w][v] = (incluir > nao_incluir) ? incluir : nao_incluir;
+        } else {
+          // Nao pode incluir o item, entao apenas copia o valor da pagina anterior
+          tabela_dp[i][w][v] = tabela_dp[i - 1][w][v];
+        }
+      }
     }
   }
 
-  liberar_matriz_int(dp, linhas);
-  liberar_matriz_char(escolha, n);
+  // Registra o resultado dos selecionados
+  int w = W;
+  int v = V;
+
+  for (int i = n; i > 0; i--) {
+    if (tabela_dp[i][w][v] != tabela_dp[i - 1][w][v]) {
+      res->selecionados[i - 1] = 1;
+      w -= inst->itens[i - 1].peso;
+      v -= inst->itens[i - 1].volume;
+    } else {
+      res->selecionados[i - 1] = 0;
+    }
+  }
+
+  res->tempo_segundos = tempo_agora() - inicio;
+  res->valor_maximo = tabela_dp[n][W][V];
 
   return res;
 }

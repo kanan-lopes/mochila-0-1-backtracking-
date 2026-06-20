@@ -2,7 +2,6 @@
 #include "prog_dinamica.c"
 
 #include <stdio.h>
-#include <stdlib.h>
 
 typedef struct {
   int n;
@@ -11,11 +10,25 @@ typedef struct {
 } ConfigExperimento;
 
 static const ConfigExperimento CONFIGS[] = {
-    {10, 20, 20},    {10, 50, 50},    {10, 100, 100},    {20, 40, 40},
-    {20, 100, 100},  {20, 200, 200},  {30, 60, 60},      {30, 150, 150},
-    {30, 300, 300},  {40, 80, 80},    {40, 200, 200},    {50, 100, 100},
-    {50, 250, 250},  {50, 500, 500},  {75, 150, 150},    {75, 375, 375},
-    {100, 200, 200}, {100, 500, 500}, {100, 1000, 1000},
+  {10, 20, 20},
+  {10, 50, 50},    
+  {10, 100, 100},    
+  {20, 40, 40},
+  {20, 100, 100},  
+  {20, 200, 200},  
+  {30, 60, 60},      
+  {30, 150, 150},
+  {30, 300, 300},  
+  {40, 80, 80},    
+  {40, 200, 200},    
+  {50, 100, 100},
+  {50, 250, 250},  
+  {50, 500, 500},  
+  {75, 150, 150},    
+  {75, 375, 375},
+  {100, 200, 200}, 
+  {100, 500, 500}, 
+  {100, 1000, 1000},
 };
 
 static const int NUM_CONFIGS = sizeof(CONFIGS) / sizeof(CONFIGS[0]);
@@ -54,7 +67,7 @@ int main(void) {
         continue;
       }
 
-      Resultado *res = mochila_resolver(inst);
+      Resultado *res = prog_dinamica_resolver(inst);
       if (!res) {
         instancia_liberar(inst);
         continue;
