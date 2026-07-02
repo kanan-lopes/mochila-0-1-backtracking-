@@ -1,0 +1,4 @@
+algoritmo,n,W,V,instancia,semente,executado,tempo_s,valor_maximo,coerente,complexidade_nWV,observacao
+programacao_dinamica,40,80,80,1,901,1,0.002290400,690,-1,256000,ok
+backtracking,40,80,80,1,901,0,-1.000000000,0,-1,256000,limite_n_backtracking
+branch_bound,40,80,80,1,901,0,-1.000000000,0,-1,256000,limite_n_branch_bound

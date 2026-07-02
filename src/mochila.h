@@ -28,6 +28,11 @@ typedef struct {
 
 void imprimir_resultado(const Instancia *inst, const Resultado *res);
 
+Resultado *prog_dinamica_resolver(const Instancia *inst);
+Resultado *backtracking_resolver(const Instancia *inst);
+Resultado *branch_bound_resolver(const Instancia *inst);
+Resultado *branch_bound_sem_inicial_resolver(const Instancia *inst);
+
 Instancia *instancia_criar(unsigned int n, unsigned int W, unsigned int V);
 void instancia_liberar(Instancia *inst);
 int instancia_ler_arquivo(const char *caminho, Instancia **inst);

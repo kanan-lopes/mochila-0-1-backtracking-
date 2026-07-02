@@ -237,11 +237,13 @@ static void liberar_contexto(ContextoBranchBound *ctx) {
  * percorre os itens restantes. Na pratica, as podas reduzem a quantidade
  * de nos visitados. Espaco auxiliar: O(n).
  */
-Resultado *branch_bound_resolver(const Instancia *inst) {
+static Resultado *branch_bound_resolver_config(const Instancia *inst,
+                                               int usar_solucao_inicial,
+                                               const char *descricao) {
   double inicio = tempo_agora();
 
-  printf("Resolvendo instancia com n=%u, W=%u, V=%u usando branch-and-bound...\n",
-         inst->n, inst->W, inst->V);
+  printf("Resolvendo instancia com n=%u, W=%u, V=%u usando %s...\n", inst->n,
+         inst->W, inst->V, descricao);
 
   Resultado *res = calloc(1, sizeof(Resultado));
   if (!res) {
@@ -276,10 +278,21 @@ Resultado *branch_bound_resolver(const Instancia *inst) {
   }
 
   preparar_ordens(&ctx);
-  gerar_solucao_inicial_gulosa(&ctx);
+  if (usar_solucao_inicial) {
+    gerar_solucao_inicial_gulosa(&ctx);
+  }
   buscar_branch_bound(&ctx, 0, 0, 0, 0);
 
   liberar_contexto(&ctx);
   res->tempo_segundos = tempo_agora() - inicio;
   return res;
+}
+
+Resultado *branch_bound_resolver(const Instancia *inst) {
+  return branch_bound_resolver_config(inst, 1, "branch-and-bound");
+}
+
+Resultado *branch_bound_sem_inicial_resolver(const Instancia *inst) {
+  return branch_bound_resolver_config(inst, 0,
+                                      "branch-and-bound sem solucao inicial");
 }

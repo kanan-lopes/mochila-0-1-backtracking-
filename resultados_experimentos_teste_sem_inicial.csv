@@ -1,0 +1,17 @@
+algoritmo,n,W,V,instancia,semente,executado,tempo_s,valor_maximo,coerente,complexidade_nWV,observacao
+programacao_dinamica,10,20,20,1,1,1,0.000058800,242,-1,4000,ok
+backtracking,10,20,20,1,1,1,0.000007200,242,1,4000,ok
+branch_bound,10,20,20,1,1,1,0.000013900,242,1,4000,ok
+branch_bound_sem_inicial,10,20,20,1,1,1,0.000012600,242,1,4000,ok
+programacao_dinamica,10,20,20,2,2,1,0.000036400,258,-1,4000,ok
+backtracking,10,20,20,2,2,1,0.000006600,258,1,4000,ok
+branch_bound,10,20,20,2,2,1,0.000012900,258,1,4000,ok
+branch_bound_sem_inicial,10,20,20,2,2,1,0.000012100,258,1,4000,ok
+programacao_dinamica,10,50,50,1,101,1,0.000185200,346,-1,25000,ok
+backtracking,10,50,50,1,101,1,0.000006700,346,1,25000,ok
+branch_bound,10,50,50,1,101,1,0.000013000,346,1,25000,ok
+branch_bound_sem_inicial,10,50,50,1,101,1,0.000012000,346,1,25000,ok
+programacao_dinamica,10,50,50,2,102,1,0.000165700,315,-1,25000,ok
+backtracking,10,50,50,2,102,1,0.000007500,315,1,25000,ok
+branch_bound,10,50,50,2,102,1,0.000011300,315,1,25000,ok
+branch_bound_sem_inicial,10,50,50,2,102,1,0.000009100,315,1,25000,ok

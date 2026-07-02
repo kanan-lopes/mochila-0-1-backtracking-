@@ -12,7 +12,7 @@
 Resultado *prog_dinamica_resolver(const Instancia *inst) {
   double inicio = tempo_agora();
 
-  printf("Resolvendo instancia com n=%d, W=%d, V=%d usando programacao dinamica...\n",
+  printf("Resolvendo instancia com n=%u, W=%u, V=%u usando programacao dinamica...\n",
          inst->n, inst->W, inst->V);
 
   Resultado *res = calloc(1, sizeof(Resultado));
@@ -41,6 +41,10 @@ Resultado *prog_dinamica_resolver(const Instancia *inst) {
   // Aloca a matriz 3D para programação dinâmica
   // Sendo as dimensões: (n+1) x (W+1) x (V+1)
   unsigned int ***tabela_dp = alocar_matriz3d_uint(n + 1, W + 1, V + 1);
+  if (!tabela_dp) {
+    resultado_liberar(res);
+    return NULL;
+  }
 
   // Inicializa a tabela com zeros
   for (int i = 0; i <= n; i++) {
@@ -89,8 +93,10 @@ Resultado *prog_dinamica_resolver(const Instancia *inst) {
     }
   }
 
-  res->tempo_segundos = tempo_agora() - inicio;
   res->valor_maximo = tabela_dp[n][W][V];
+  res->tempo_segundos = tempo_agora() - inicio;
+
+  liberar_matriz3d_uint(tabela_dp, n + 1, W + 1);
 
   return res;
 }
